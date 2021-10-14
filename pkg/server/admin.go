@@ -10,7 +10,7 @@ import (
 	"walletapi/pkg/errors"
 )
 
-// createUser?username=xxx&password=yyy
+// AdminCreateUser createUser?username=xxx&password=yyy
 func AdminCreateUser(c *gin.Context) {
 	username := c.Request.FormValue("username")
 	password := c.Request.FormValue("password")
@@ -34,8 +34,7 @@ func AdminCreateUser(c *gin.Context) {
 	c.IndentedJSON(http.StatusAccepted, gin.H{"message": "Successfully created a new user" ,"createdUser": admin})
 }
 
-
-// setBalance?username=xxx?balance=100
+// AdminSetBalance setBalance?username=xxx?balance=100
 func AdminSetBalance(c *gin.Context) {
 	username := c.Request.FormValue("username")
 	balanceStr := c.Request.FormValue("balance")
@@ -77,16 +76,11 @@ func AdminGetUser(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, 
-		gin.H{
-		"publicInfo": user,
-		"token": user.Token, 
-		"balance": user.Balance,
-		"registeredFrom": user.CreatedAt})
+	c.IndentedJSON(http.StatusOK, user.)
 }
 
 
-func initHandlers_Admin() {
+func initHandlersAdmin() {
 	group := server.Group("/admin") 
 	{
 		group.GET("/getUser", AdminGetUser)

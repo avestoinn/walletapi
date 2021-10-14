@@ -2,6 +2,7 @@ package database
 
 import (
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"walletapi/pkg/errors"
 )
 
@@ -9,27 +10,34 @@ type User struct {
 	gorm.Model	`json:"-"`
 	Username string	`json:"username"`
 	Password string	`json:"-"`
-	Balance	float64	`json:"balance"`
+	Wallets []*Wallet	`gorm:"many2many:user_wallets;" json:"wallets"`
 	Token string	`json:"-"`
 }
 
 
+func (u *User) GetPrimaryWallet() *Wallet {
+	wallet, err := GetWalletByID(u.Wallets[0].ID)
+	if err != nil {
+		return nil
+	}
+	return wallet
+}
+
+
 func (u *User) AddBalance(amount float64) (oldBalance, newBalance float64) {
-	oldBalance = u.Balance
-	u.Balance += amount
+	oldBalance = u.GetPrimaryWallet().Balance
+	u.GetPrimaryWallet().Balance += amount
 	database.Save(u)
-	return oldBalance, u.Balance
+	return oldBalance, u.GetPrimaryWallet().Balance
 }
 
 
 func (u *User) SetBalance(amount float64) (oldBalance, newBalance float64) {
-	oldBalance = u.Balance
-	u.Balance = amount
+	oldBalance = u.GetPrimaryWallet().Balance
+	u.GetPrimaryWallet().Balance = amount
 	database.Save(u)
-	return oldBalance, u.Balance
+	return oldBalance, u.GetPrimaryWallet().Balance
 }
-
-
 
 
 func GetUserByUsername(username string) (*User, error) {
@@ -39,6 +47,7 @@ func GetUserByUsername(username string) (*User, error) {
 	if res.Error != nil {
 		return nil, errors.ErrAccountNotExist
 	}
+	database.Preload(clause.Associations).Find(&user)
 	return user, nil
 }
 
@@ -80,5 +89,14 @@ func CreateUser(username, password string) (*User, error) {
 		return nil, res.Error
 	}
 
+	// Creating user's first wallet
+	_, err := NewWallet("", []*User{user})
+	if err != nil {
+		return nil, err
+	}
+
+	// Setting created wallet as primary wallet for further operations
+	database.Save(user)
+	database.Preload(clause.Associations).Find(&user)
 	return user, nil
 }

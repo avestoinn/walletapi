@@ -2,9 +2,6 @@ package errors
 
 import "errors"
 
-type AuthError interface {
-	Error() string
-}
 
 var (
 	ErrAccountNotExist = errors.New("account with provided username doesn't exist")
