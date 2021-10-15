@@ -7,10 +7,10 @@ import (
 )
 
 type Wallet struct {
-	gorm.Model
+	gorm.Model	`json:"-"`
 	Name string
 	Balance	float64
-	Owners []*User	`gorm:"many2many:user_wallets;" json:"owners"`
+	Owners []*User	`gorm:"many2many:user_wallets;" json:"-"`
 }
 
 

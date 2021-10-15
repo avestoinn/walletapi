@@ -9,6 +9,7 @@ var server = gin.Default()
 func Run() error {
 	// Initializing handlers before start the server
 	initHandlersAdmin()
+	initHandlersUser()
 
 	err := server.Run("localhost:8000")
 	if err != nil {
